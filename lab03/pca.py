@@ -1,8 +1,10 @@
 import numpy as np
 import utils
 import matplotlib.pyplot as plt
+import os
 
 def pca(filename, m):
+    out_dir = 'outputs'
     D = utils.load_iris(filename)
     mu, C = utils.get_mean_cov(D)
 
@@ -14,6 +16,8 @@ def pca(filename, m):
     P = U[:, ::-1][:, 0:m]
 
     DP = np.dot(P.T, D)
+
+    save_path = os.path.join(out_dir, "pca_scatter_2d.png")
 
     plt.figure(figsize=(7, 5))
     classes = [
@@ -36,7 +40,8 @@ def pca(filename, m):
     plt.title("PCA - Iris Dataset (2D Projection)")
     plt.legend()
     plt.grid(True, linestyle="--", alpha=0.5)
-    plt.show()
+    plt.savefig(save_path, dpi=300)
+    plt.close()
 
 
 if __name__ == "__main__":

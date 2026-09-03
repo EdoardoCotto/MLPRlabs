@@ -1,6 +1,12 @@
 import pandas as pd
 import numpy as np
 
+def v_row(v):
+    return np.reshape(v, (1, v.size))
+
+def v_col(v):
+    return np.reshape(v, (v.size, 1))
+
 def load_iris(file_path):
     dic = {
         "Iris-setosa": 0,
