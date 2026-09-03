@@ -1,51 +1,43 @@
 import numpy as np
+import utils
 import matplotlib.pyplot as plt
 
-def mcol(x):
-    x = np.array(x)
-    return x.reshape(x.shape[0], 1)
+def pca(filename, m):
+    D = utils.load_iris(filename)
+    mu, C = utils.get_mean_cov(D)
 
-def readFile(filename):
-    dictionary = {
-        'Iris-setosa': 0,
-        'Iris-versicolor': 1,
-        'Iris-virginica': 2
-    }
-    Dlist = []
-    Llist = []
-    with open(filename, 'r') as f:
-        for line in f:
-            items = line.strip().split(',')
-            attrs = mcol([float(x) for x in items[:-1]])
-            label = dictionary[items[-1]]
-            Dlist.append(attrs)
-            Llist.append(label)
-    return np.hstack(Dlist), np.array(Llist)
+    L = D.T[-1, :]
 
-def compute_pca(D,m):
-    mu = D.mean(1).reshape(D.shape[0],1)
-    DC = D - mu
-    C = (DC @ DC.T) / (DC.shape[1])
-    U, s, Vh = np.linalg.svd(C)
-    P = U[:,0:m]
-    return P
+    D = utils.center_data(D, mu)
 
-def apply_pca(D, P):
-    return P.T @ D
+    s, U = np.linalg.eigh(C)
+    P = U[:, ::-1][:, 0:m]
 
-def plot_pca(P, L):
-    plt.figure()
-    plt.scatter(P[0, L == 0], P[1, L == 0], color='red', label='Iris-setosa')
-    plt.scatter(P[0, L == 1], P[1, L == 1], color='green', label='Iris-versicolor')
-    plt.scatter(P[0, L == 2], P[1, L == 2], color='blue', label='Iris-virginica')
-    plt.title('PCA of Iris Dataset')
-    plt.savefig('graphics/iris_pca.png')
+    DP = np.dot(P.T, D)
+
+    plt.figure(figsize=(7, 5))
+    classes = [
+        (0, "Iris-setosa", "blue"),
+        (1, "Iris-versicolor", "orange"),
+        (2, "Iris-virginica", "green")
+    ]
+
+    for label, name, color in classes:
+        plt.scatter(
+            DP[0, L == label], 
+            DP[1, L == label], 
+            label=name, 
+            color=color,
+            alpha=0.8
+        )
+
+    plt.xlabel("1st Principal Direction")
+    plt.ylabel("2nd Principal Direction")
+    plt.title("PCA - Iris Dataset (2D Projection)")
+    plt.legend()
+    plt.grid(True, linestyle="--", alpha=0.5)
     plt.show()
 
-if __name__ == "__main__":
-    D,L = readFile('iris.csv')
-    P = compute_pca(D, 2)
-    Psol = apply_pca(D, P)
-    plot_pca(Psol, L)
-    
 
+if __name__ == "__main__":
+    pca("iris.csv", m=2)
